@@ -188,9 +188,10 @@ export default class GUI {
 	 * selectable values for a dropdown.
 	 * @param {number} [max] Maximum value for number controllers.
 	 * @param {number} [step] Step value for number controllers.
+	 * @param {string} [scale] Scale for number controllers.
 	 * @returns {Controller}
 	 */
-	add( object, property, $1, max, step ) {
+	add( object, property, $1, max, step, scale ) {
 
 		if ( Object( $1 ) === $1 ) {
 
@@ -204,7 +205,7 @@ export default class GUI {
 
 			case 'number':
 
-				return new NumberController( this, object, property, $1, max, step );
+				return new NumberController( this, object, property, $1, max, step, scale );
 
 			case 'boolean':
 

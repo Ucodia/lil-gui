@@ -2,7 +2,7 @@ import Controller from './Controller';
 
 export default class NumberController extends Controller {
 
-	constructor( parent, object, property, min, max, step ) {
+	constructor( parent, object, property, min, max, step, scale ) {
 
 		super( parent, object, property, 'number' );
 
@@ -13,6 +13,16 @@ export default class NumberController extends Controller {
 
 		const stepExplicit = step !== undefined;
 		this.step( stepExplicit ? step : this._getImplicitStep(), stepExplicit );
+
+		this._scale = scale;
+
+		// Add scale option
+		this._scale = scale || 'linear';
+
+		// Validate logarithmic constraints
+		if ( this._scale === 'logarithmic' && ( this._min <= 0 || this._max <= 0 ) ) {
+			this._scale = 'linear';
+		}
 
 		this.updateDisplay();
 
@@ -43,16 +53,14 @@ export default class NumberController extends Controller {
 	}
 
 	updateDisplay() {
-
 		const value = this.getValue();
 
 		if ( this._hasSlider ) {
-
-			let percent = ( value - this._min ) / ( this._max - this._min );
+			let percent = this._scale === 'logarithmic'
+				? this._mapLogFrom( value, this._min, this._max, 0, 1 )
+				: this._mapLinearFrom( value, this._min, this._max, 0, 1 );
 			percent = Math.max( 0, Math.min( percent, 1 ) );
-
 			this.$fill.style.width = percent * 100 + '%';
-
 		}
 
 		if ( !this._inputFocused ) {
@@ -60,7 +68,6 @@ export default class NumberController extends Controller {
 		}
 
 		return this;
-
 	}
 
 	_initInput() {
@@ -260,13 +267,12 @@ export default class NumberController extends Controller {
 		// Map clientX to value
 		// ---------------------------------------------------------------------
 
-		const map = ( v, a, b, c, d ) => {
-			return ( v - a ) / ( b - a ) * ( d - c ) + c;
-		};
-
 		const setValueFromX = clientX => {
 			const rect = this.$slider.getBoundingClientRect();
-			let value = map( clientX, rect.left, rect.right, this._min, this._max );
+			const normalizedX = ( clientX - rect.left ) / ( rect.right - rect.left );
+			const value = this._scale === 'logarithmic'
+				? this._mapLogTo( normalizedX, this._min, this._max, 0, 1 )
+				: this._mapLinearTo( normalizedX, this._min, this._max, 0, 1 );
 			this._snapClampSetValue( value );
 		};
 
@@ -513,6 +519,33 @@ export default class NumberController extends Controller {
 
 	get _hasMax() {
 		return this._max !== undefined;
+	}
+
+	// Mapping functions
+	_map( v, a, b, c, d ) {
+		return ( v - a ) / ( b - a ) * ( d - c ) + c;
+	}
+
+	_mapLinearTo( v, a, b, c, d ) {
+		return this._map( v, c, d, a, b );
+	}
+
+	_mapLinearFrom( v, a, b, c, d ) {
+		return this._map( v, a, b, c, d );
+	}
+
+	_mapLogTo( v, a, b, c, d ) {
+		const minLog = Math.log( a );
+		const maxLog = Math.log( b );
+		const scale = ( maxLog - minLog ) / ( d - c );
+		return Math.exp( minLog + ( v - c ) * scale );
+	}
+
+	_mapLogFrom( v, a, b, c, d ) {
+		const minLog = Math.log( a );
+		const maxLog = Math.log( b );
+		const scale = ( maxLog - minLog ) / ( d - c );
+		return ( Math.log( v ) - minLog ) / scale + c;
 	}
 
 }

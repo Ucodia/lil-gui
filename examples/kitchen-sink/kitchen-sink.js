@@ -99,6 +99,21 @@ make( { title: 'Numbers Misc.' }, gui => {
 
 } );
 
+make( { title: 'Logarithmic Scale' }, gui => {
+
+	const addLogScale = ( min, max, value, step, name ) => {
+		gui.add( { x: value }, 'x', min, max, step, 'logarithmic' )
+			.name( name );
+	};
+
+	// Audio frequency range (20Hz to 20kHz)
+	addLogScale( 20, 20000, 440, 1, 'Frequency (Hz)' );
+
+	// Camera zoom range
+	addLogScale( 0.1, 100, 1, 0.1, 'Zoom Level' );
+
+} );
+
 make( { title: 'Options' }, gui => {
 
 	gui.add( { x: 0 }, 'x', [ 0, 1, 2 ] ).name( 'Array' );

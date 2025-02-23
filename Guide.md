@@ -86,6 +86,29 @@ gui.add( obj, 'number1', 0, 1 ); // min, max
 gui.add( obj, 'number2', 0, 100, 10 ); // min, max, step
 ```
 
+### Logarithmic Scale
+
+For values that span several orders of magnitude (like frequencies or zoom levels), you can use logarithmic scaling to make the slider more intuitive. Pass the `scale: 'logarithmic'` option to enable this feature.
+
+```js
+obj = {
+    frequency: 440,    // audio frequency (Hz)
+    zoom: 100         // camera zoom level
+}
+
+// Frequency slider from 20Hz to 20kHz
+gui.add( obj, 'frequency', 20, 20000, 1, { scale: 'logarithmic' } );
+
+// Zoom slider from 1 to 1000
+gui.add( obj, 'zoom', 1, 1000, 1, { scale: 'logarithmic' } );
+```
+
+With logarithmic scaling:
+- The middle of the slider (50%) represents the geometric mean of min and max values
+- Values are distributed exponentially across the slider
+- Only works with positive min and max values (falls back to linear scale if <= 0)
+- Particularly useful for audio parameters, zoom levels, or any values that follow exponential growth
+
 ## Dropdowns
 
 You can create a dropdown for any data type by providing an array of accepted values. If you pass an
